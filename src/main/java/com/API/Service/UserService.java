@@ -1,8 +1,14 @@
 package com.API.Service;
 
-import java.util.List;
+import static org.hibernate.query.sqm.tree.SqmNode.log;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +16,7 @@ import com.API.dto.request.UserCreationRequest;
 import com.API.dto.request.UserUpdateRequest;
 import com.API.dto.response.UserResponse;
 import com.API.entity.User;
+import com.API.enums.Role;
 import com.API.exception.AppException;
 import com.API.exception.ErrorCode;
 import com.API.exception.TrueAppException;
@@ -19,31 +26,49 @@ import com.API.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
     UserRepository userRepository;
     UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
 
     public UserResponse createRequest(UserCreationRequest request) {
         if (userRepository.existsByUsername(request.getUsername()))
             throw new AppException(ErrorCode.USER_EXISTS);
         User user = userMapper.mapToUser(request);
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        HashSet<String> roles = new HashSet<>();
+        roles.add(Role.USER.name());
+        user.setRoles(roles);
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
+    @PreAuthorize("hasRole('ADMIN')") // thoa dieu kien moi duoc vao ben trong method
     public List<UserResponse> getUser() {
+        log.info("In method get user");
         return userRepository.findAll().stream().map(
                 userMapper::toUserResponse).toList();
     }
 
+    @PostAuthorize("returnObject.username == authentication.name") // xu ly ben trong method moi kiem tra dieu kien
     public UserResponse getUser(String id) {
+        log.info("In method get user by ID");
         return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_ID)));
+    }
+
+    public UserResponse getMyinfo() {
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+
+        User user = userRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        return userMapper.toUserResponse(user);
     }
 
     public UserResponse updateUser(String id, UserUpdateRequest request) {

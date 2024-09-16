@@ -2,6 +2,7 @@ package com.API.controller;
 
 import java.util.List;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,7 +22,9 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -40,9 +43,13 @@ public class UserController {
     // doc toan bo user
     @GetMapping
     public ApiResponse<List<UserResponse>> getUsers() {
-        ApiResponse<List<UserResponse>> apiResponse = new ApiResponse<>();
-        apiResponse.setResult(userService.getUser());
-        return apiResponse;
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("usernme: {}", authentication.getName());
+        authentication.getAuthorities()
+                .forEach(grandAuthority -> log.info("authority: {}", grandAuthority.getAuthority()));
+        return ApiResponse.<List<UserResponse>>builder()
+                .result(userService.getUser())
+                .build();
     }
 
     @GetMapping("/{id}")
@@ -50,6 +57,13 @@ public class UserController {
         ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(userService.getUser(id));
         return apiResponse;
+    }
+
+    @GetMapping("/myinfo")
+    public ApiResponse<UserResponse> getMyinfo() {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyinfo())
+                .build();
     }
 
     @PutMapping("/{id}")
