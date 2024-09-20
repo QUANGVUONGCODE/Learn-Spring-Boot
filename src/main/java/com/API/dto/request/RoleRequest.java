@@ -1,9 +1,4 @@
-package com.API.dto.response;
-
-import java.time.LocalDate;
-import java.util.Set;
-
-import com.API.entity.Role;
+package com.API.dto.request;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -11,17 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import java.util.Set;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
-    String id;
-    String username;
-    String firstName;
-    String lastName;
-    LocalDate dateOfBirth;
-    Set<Role> roles;
+public class RoleRequest {
+    String name;
+    String description;
+    Set<String> permissions;
 }

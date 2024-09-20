@@ -1,14 +1,10 @@
 package com.API.entity;
 
-import java.time.LocalDate;
 import java.util.Set;
 
-import org.hibernate.annotations.ManyToAny;
-
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,15 +20,11 @@ import lombok.AccessLevel;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User {
+public class Role {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
-    String username;
-    String Password;
-    String firstName;
-    String lastName;
-    LocalDate dateOfBirth;
-    @ManyToAny
-    Set<Role> roles;
+    String name;
+    String description;
+
+    @ManyToMany // ket noi theo so nhieu
+    Set<Permission> permissions;
 }
