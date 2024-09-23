@@ -11,6 +11,7 @@ import com.API.Service.AutheticationService;
 import com.API.dto.request.ApiResponse;
 import com.API.dto.request.AuthenticationRequest;
 import com.API.dto.request.IntrospectRequest;
+import com.API.dto.request.LogoutRequest;
 import com.API.dto.response.AutheticationReponse;
 import com.API.dto.response.IntrospectReponse;
 import com.nimbusds.jose.JOSEException;
@@ -41,5 +42,12 @@ public class AuthenticationController {
         return ApiResponse.<IntrospectReponse>builder()
                 .result(result)
                 .build();
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(@RequestBody LogoutRequest request)
+            throws JOSEException, ParseException {
+        autheticationService.logout(request);
+        return ApiResponse.<Void>builder().build();
     }
 }

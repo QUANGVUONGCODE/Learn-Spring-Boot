@@ -1,5 +1,8 @@
 package com.API.dto.request;
+
 import java.time.LocalDate;
+
+import com.API.validator.DobConstraint;
 
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -21,5 +24,6 @@ public class UserCreationRequest {
     String password;
     String firstName;
     String lastName;
+    @DobConstraint(min = 16, message = "INVALID_DOB")
     LocalDate dateOfBirth;
 }

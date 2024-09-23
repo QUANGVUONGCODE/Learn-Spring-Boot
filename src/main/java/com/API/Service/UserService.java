@@ -21,6 +21,7 @@ import com.API.exception.AppException;
 import com.API.exception.ErrorCode;
 import com.API.exception.TrueAppException;
 import com.API.mapper.UserMapper;
+import com.API.repository.RoleRepository;
 import com.API.repository.UserRepository;
 
 import lombok.AccessLevel;
@@ -36,6 +37,7 @@ public class UserService {
     UserRepository userRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    RoleRepository roleRepository;
 
     public UserResponse createRequest(UserCreationRequest request) {
         if (userRepository.existsByUsername(request.getUsername()))
@@ -50,14 +52,13 @@ public class UserService {
 
     @PreAuthorize("hasRole('ADMIN')") // thoa dieu kien moi duoc vao ben trong method
     public List<UserResponse> getUser() {
-        log.info("In method get user");
         return userRepository.findAll().stream().map(
                 userMapper::toUserResponse).toList();
     }
 
     @PostAuthorize("returnObject.username == authentication.name") // xu ly ben trong method moi kiem tra dieu kien
     public UserResponse getUser(String id) {
-        log.info("In method get user by ID");
+
         return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_ID)));
     }
@@ -75,6 +76,9 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_ID));
         userMapper.updateUser(user, request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        var roles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
