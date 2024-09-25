@@ -1,10 +1,7 @@
 package com.API.Service;
 
-import static org.hibernate.query.sqm.tree.SqmNode.log;
-
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
